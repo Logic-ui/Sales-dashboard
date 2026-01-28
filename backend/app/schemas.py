@@ -19,5 +19,5 @@ class SaleOut(BaseModel):
     product: str
     created_at: datetime
 
-    class Config:
-        orm_mode = True
+    # Pydantic v2: use model_config to enable ORM mode via from_attributes
+    model_config = {"from_attributes": True}
