@@ -41,14 +41,32 @@ fastapi-sales/
 ### Using Docker (Recommended)
 
 ```bash
-# Build and run both backend and frontend
-docker-compose up --build
+# Build and run both backend and frontend (detached)
+docker compose up --build -d
 ```
 
 The application will be available at:
 - Frontend: http://localhost:3000
 - Backend API: http://localhost:8000
 - API Documentation: http://localhost:8000/docs
+
+### Debugging in Docker 🔧
+
+- Build and start containers (detached):
+
+```bash
+docker compose up --build -d
+```
+
+- Attach debuggers from VS Code (see `.vscode/launch.json` added to the repo):
+  - **Python (Backend)**: attach to `localhost:5678` (uses `debugpy`)
+  - **Node (Frontend)**: attach to `localhost:9229` (Node inspector)
+
+- Useful commands:
+  - View logs: `docker compose logs -f backend` or `docker compose logs -f frontend`
+  - Rebuild when dependencies change: `docker compose up --build -d --force-recreate`
+
+> ⚠️ Note: Ensure Docker is running locally and ports 8000/3000/5678/9229 are available.
 
 ### Local Development
 

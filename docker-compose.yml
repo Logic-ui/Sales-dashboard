@@ -7,10 +7,13 @@ services:
       dockerfile: backend/Dockerfile
     ports:
       - "8000:8000"
+      - "5678:5678"
     environment:
       - DATABASE_URL=sqlite:///./test.db
+      - PYTHONUNBUFFERED=1
     volumes:
       - ./backend:/app
+    restart: unless-stopped
 
   frontend:
     build:
@@ -18,7 +21,13 @@ services:
       dockerfile: Dockerfile
     ports:
       - "3000:3000"
+      - "9229:9229"
     depends_on:
       - backend
     environment:
       - REACT_APP_API_URL=http://backend:8000
+      - HOST=0.0.0.0
+      - CHOKIDAR_USEPOLLING=true
+    volumes:
+      - ./frontend:/app
+    restart: unless-stopped
