@@ -14,6 +14,12 @@ const api = axios.create({
   baseURL: process.env.REACT_APP_API_URL || defaultBase,
 });
 
+// Helpful: log configured API base URL to aid debugging (dev only)
+if (process.env.NODE_ENV !== "production") {
+  // eslint-disable-next-line no-console
+  console.log("[api] baseURL:", api.defaults.baseURL);
+}
+
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
   if (token) config.headers.Authorization = `Bearer ${token}`;

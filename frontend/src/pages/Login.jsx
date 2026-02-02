@@ -40,7 +40,12 @@ export default function Login() {
       } else if (err.response?.data?.detail) {
         setError(err.response.data.detail);
       } else if (err.message === "Network Error") {
-        setError("Cannot connect to server. Make sure backend is running on :8000");
+        // Show the base URL to make debugging easier (dev only)
+        // eslint-disable-next-line no-console
+        console.error("API baseURL:", api.defaults.baseURL);
+        setError(
+          `Cannot connect to server (base: ${api.defaults.baseURL}). Make sure backend is running on :8000`
+        );
       } else {
         setError("Login failed. Please try again.");
       }

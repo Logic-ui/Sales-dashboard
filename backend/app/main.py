@@ -19,3 +19,9 @@ app.add_middleware(
 app.include_router(auth.router)
 app.include_router(sales.router)
 app.include_router(dashboard.router)
+
+# Simple health endpoint for quick checks
+@app.get("/ping")
+def ping():
+    return {"status": "ok"}
+
