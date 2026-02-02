@@ -1,12 +1,6 @@
-FROM python:3.11-slim
-
-WORKDIR /app
-ENV PYTHONUNBUFFERED=1
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-
-COPY . .
-
-EXPOSE 8000 5678
-
-CMD ["python", "-m", "debugpy", "--listen", "0.0.0.0:5678", "-m", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+# REMOVED - Dockerfile
+# Docker support was removed. To run the backend locally:
+# 1. python -m venv venv
+# 2. source venv/bin/activate
+# 3. pip install -r requirements.txt
+# 4. uvicorn app.main:app --reload --host 0.0.0.0 --port 8000

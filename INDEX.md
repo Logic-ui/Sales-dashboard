@@ -97,7 +97,6 @@ backend/
 │   └── utils/
 │       ├── hashing.py       ← Password hashing
 │       └── jwt.py           ← JWT token utilities
-├── Dockerfile               ← Container image
 ├── requirements.txt         ← Python dependencies
 └── test.db                 ← SQLite database (auto-created)
 ```
@@ -121,7 +120,6 @@ frontend/
 │   └── components/          ← Reusable components (ready for expansion)
 ├── public/
 │   └── index.html           ← HTML template
-├── Dockerfile               ← Container image
 ├── package.json             ← Node dependencies
 └── .gitignore              ← Git ignore rules
 ```
@@ -129,7 +127,6 @@ frontend/
 ### Root Files
 ```
 fastapi-sales/
-├── docker-compose.yml       ← Docker orchestration
 ├── requirements.txt         ← Python dependencies
 ├── README.md               ← Project overview
 ├── SETUP.md                ← Installation guide
@@ -252,17 +249,9 @@ Backend allows:
 
 ---
 
-## 🐳 Docker Setup
+## 🐳 Docker Setup (Removed)
 
-### Build Images
-```bash
-docker-compose up --build
-```
-
-### Access Services
-- Frontend: http://localhost:3000
-- Backend: http://localhost:8000
-- API Docs: http://localhost:8000/docs
+Docker support has been removed from this repository. Use the **Local Development** instructions in `README.md` or `SETUP.md` to run the backend and frontend locally.
 
 ---
 
@@ -296,8 +285,7 @@ docker-compose up --build
 - CSS3 (Styling)
 
 ### DevOps
-- Docker (Containerization)
-- Docker Compose (Orchestration)
+- Local development (manual run)
 - Git (Version control)
 
 ---

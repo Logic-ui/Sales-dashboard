@@ -82,7 +82,6 @@ fastapi-sales/
 │   │   │   └── dashboard.py
 │   │   └── utils/
 │   ├── test.db                 (Auto-created)
-│   ├── Dockerfile
 │   └── requirements.txt
 │
 ├── frontend/
@@ -102,11 +101,9 @@ fastapi-sales/
 │   │   └── components/
 │   ├── public/
 │   │   └── index.html
-│   ├── Dockerfile
 │   ├── package.json
 │   └── .gitignore
 │
-├── docker-compose.yml
 ├── README.md
 ├── SETUP.md
 ├── DESIGN.md                   (New!)
@@ -135,10 +132,9 @@ npm start
 ```
 ✓ Frontend: http://localhost:3000
 
-### Option 2: Docker Compose
-```bash
-docker-compose up --build
-```
+### Option 2: Docker Compose (Removed)
+
+Docker support has been removed from this repository. Use **Option 1: Local Development** above to run the app locally.
 
 ---
 
@@ -268,7 +264,7 @@ docker-compose up --build
 ✓ `App.jsx` - Updated with all routes
 ✓ `index.jsx` - CSS imports added
 ✓ `package.json` - Fixed configuration
-✓ `docker-compose.yml` - Updated
+✓ Docker support removed; `docker-compose.yml` updated to indicate removal
 
 ### Documentation
 ✓ `DESIGN.md` - Design system guide

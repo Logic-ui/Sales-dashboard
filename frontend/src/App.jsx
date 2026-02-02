@@ -5,10 +5,12 @@ import Dashboard from "./pages/Dashboard";
 import Sales from "./pages/Sales";
 import Profile from "./pages/Profile";
 import './App.css';
+import Navbar from "./components/Navbar";
 
 export default function App() {
   return (
     <BrowserRouter>
+      <Navbar />
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/register" element={<Register />} />

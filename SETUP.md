@@ -34,19 +34,9 @@ Frontend runs on: **http://localhost:3000**
 
 ---
 
-## Quick Start - Option 2: Docker Compose
+## Quick Start - Option 2: Docker Compose (Removed)
 
-### Prerequisites
-- Docker
-- Docker Compose
-
-### Start All Services
-```bash
-docker-compose up --build
-```
-
-- Backend: http://localhost:8000
-- Frontend: http://localhost:3000
+Docker support has been removed from this repository. Please use **Option 1: Local Development** above to run the backend and frontend on your machine.
 
 ---
 
@@ -63,7 +53,6 @@ fastapi-sales/
 │   │   ├── auth.py              # Auth utilities
 │   │   ├── routes/              # API endpoints
 │   │   └── utils/               # Helper functions
-│   ├── Dockerfile
 │   └── requirements.txt
 ├── frontend/
 │   ├── src/
@@ -72,9 +61,7 @@ fastapi-sales/
 │   │   ├── pages/               # Page components
 │   │   └── components/          # Reusable components
 │   ├── public/
-│   ├── Dockerfile
 │   └── package.json
-├── docker-compose.yml
 ├── requirements.txt
 └── README.md
 ```
@@ -121,7 +108,7 @@ fastapi-sales/
 ✅ Removed PostgreSQL dependency (using SQLite instead)
 ✅ Fixed Pydantic V2 config warnings
 ✅ Updated frontend entry point configuration
-✅ Configured environment variables for Docker
+✅ Configured environment variables
 ✅ Fixed axios API URL configuration
 
 ---
@@ -168,6 +155,6 @@ API Docs: http://localhost:8000/docs
 
 - **Backend**: FastAPI, SQLAlchemy, Pydantic, SQLite
 - **Frontend**: React 18, React Router, Axios, CSS3
-- **DevOps**: Docker, Docker Compose
+- **DevOps**: Local development
 - **Security**: JWT tokens, password hashing with bcrypt
 

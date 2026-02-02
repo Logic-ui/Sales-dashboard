@@ -287,6 +287,81 @@ a:hover {
 }
 
 
+/* NAVBAR */
+.site-navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 28px;
+  background: white;
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.06);
+  position: sticky;
+  top: 0;
+  z-index: 60;
+}
+
+.site-navbar .brand {
+  font-weight: 800;
+  color: var(--primary);
+  font-size: 18px;
+  margin-right: 20px;
+}
+
+.nav-links {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.nav-link {
+  padding: 8px 12px;
+  color: #444;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.nav-link:hover {
+  background: rgba(102, 126, 234, 0.08);
+  color: var(--primary);
+  transform: translateY(-2px);
+}
+
+.nav-right {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.logout-sm {
+  padding: 8px 12px;
+  background: var(--danger);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.logout-sm:hover {
+  background: #ff5252;
+  transform: translateY(-2px);
+}
+
+.nav-register {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-weight: 700;
+}
+
+@media (max-width: 720px) {
+  .nav-links { display: none; }
+  .site-navbar { padding: 12px 16px; }
+}
+
 /* ========================================
    DASHBOARD LAYOUT
    ======================================== */
