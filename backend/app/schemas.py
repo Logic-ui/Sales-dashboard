@@ -20,9 +20,23 @@ class Token(BaseModel):
     access_token: str
     token_type: str = "bearer"
 
+from pydantic import Field, validator
+
 class SaleCreate(BaseModel):
-    amount: float
-    product: str
+    amount: float = Field(..., gt=0)
+    product: str = Field(..., min_length=1)
+
+    @validator("product")
+    def strip_product(cls, v):
+        return v.strip()
+
+class SaleUpdate(BaseModel):
+    amount: Optional[float] = Field(None, gt=0)
+    product: Optional[str] = Field(None, min_length=1)
+
+    @validator("product")
+    def strip_product(cls, v):
+        return v.strip() if v is not None else v
 
 class SaleOut(BaseModel):
     id: int

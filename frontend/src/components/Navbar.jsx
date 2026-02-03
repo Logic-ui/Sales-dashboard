@@ -1,9 +1,21 @@
 import { Link, useNavigate } from "react-router-dom";
-import React from "react";
+import React, { useEffect, useState } from "react";
+import api from "../api/axios";
 
 export default function Navbar() {
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
+  const [email, setEmail] = useState("");
+
+  useEffect(() => {
+    if (!token) return;
+    let mounted = true;
+    api
+      .get("/users/me")
+      .then((res) => mounted && setEmail(res.data.email))
+      .catch(() => {});
+    return () => (mounted = false);
+  }, [token]);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -34,9 +46,12 @@ export default function Navbar() {
 
       <div className="nav-right">
         {token ? (
-          <button className="logout-sm" onClick={handleLogout}>
-            Logout
-          </button>
+          <>
+            {email && <div className="nav-user">{email}</div>}
+            <button className="logout-sm" onClick={handleLogout}>
+              Logout
+            </button>
+          </>
         ) : (
           <>
             <Link to="/" className="nav-link">
@@ -50,4 +65,4 @@ export default function Navbar() {
       </div>
     </nav>
   );
-}
+} 

@@ -131,6 +131,35 @@ export default function Sales() {
           </div>
         </form>
 
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <input placeholder="Search product..." value={q} onChange={(e) => setQ(e.target.value)} />
+            <button className="btn" onClick={() => { setPage(1); load({ page: 1, q }); }}>Search</button>
+            <button className="btn btn-secondary" onClick={() => { setQ(""); setPage(1); load({ page: 1, q: "" }); }}>Clear</button>
+          </div>
+
+          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <label>Sort:</label>
+            <select value={sort} onChange={(e) => { setSort(e.target.value); load({ page: 1, sort: e.target.value }); }}>
+              <option value="created_at">Date</option>
+              <option value="amount">Amount</option>
+              <option value="product">Product</option>
+            </select>
+
+            <select value={order} onChange={(e) => { setOrder(e.target.value); load({ page: 1, order: e.target.value }); }}>
+              <option value="desc">Desc</option>
+              <option value="asc">Asc</option>
+            </select>
+
+            <label>Per page:</label>
+            <select value={limit} onChange={(e) => { setLimit(parseInt(e.target.value)); setPage(1); load({ page: 1, limit: parseInt(e.target.value) }); }}>
+              <option value={5}>5</option>
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+            </select>
+          </div>
+        </div>
+
         <h2>Recent Sales</h2>
 
         {loading ? (
@@ -151,7 +180,7 @@ export default function Sales() {
                   <th>Product</th>
                   <th>Amount</th>
                   <th>Date</th>
-                  <th>Status</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -162,12 +191,22 @@ export default function Sales() {
                     <td><strong>${parseFloat(sale.amount).toFixed(2)}</strong></td>
                     <td>{new Date(sale.created_at).toLocaleDateString()}</td>
                     <td>
-                      <span className="status-badge completed">Completed</span>
+                      <button className="btn btn-secondary" onClick={() => handleEdit(sale)}>Edit</button>
+                      <button className="btn btn-danger" style={{ marginLeft: 8 }} onClick={() => handleDelete(sale.id)}>Delete</button>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
+
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 16 }}>
+              <div>Showing {sales.length} of {total} results</div>
+              <div style={{ display: "flex", gap: 8 }}>
+                <button className="btn" onClick={() => { if (page > 1) { setPage(page - 1); load({ page: page - 1 }); } }} disabled={page === 1}>Prev</button>
+                <div style={{ padding: "8px 12px", background: "#fff", borderRadius: 6 }}>{page}</div>
+                <button className="btn" onClick={() => { if (sales.length === limit) { setPage(page + 1); load({ page: page + 1 }); } }} disabled={sales.length < limit}>Next</button>
+              </div>
+            </div>
           </div>
         )}
       </div>
