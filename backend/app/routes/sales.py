@@ -21,7 +21,7 @@ def create_sale(
     db: Session = Depends(get_db),
     user=Depends(get_current_user)
 ):
-    new_sale = Sale(**sale.dict())
+    new_sale = Sale(**sale.dict(), user_id=user)  # Capture user_id from auth
     db.add(new_sale)
     db.commit()
     db.refresh(new_sale)
