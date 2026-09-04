@@ -26,7 +26,7 @@ export default function Profile() {
         ]);
         setUser(uRes.data);
         setEmail(uRes.data.email);
-        setSales(sRes.data || []);
+        setSales(Array.isArray(sRes.data?.items) ? sRes.data.items : []);
       } catch (err) {
         console.error("Failed to load profile or sales:", err);
         setError("Failed to load profile data");

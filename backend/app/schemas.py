@@ -47,3 +47,7 @@ class SaleOut(BaseModel):
 
     # Pydantic v2: use model_config to enable ORM mode via from_attributes
     model_config = {"from_attributes": True}
+
+class SalesPage(BaseModel):
+    items: list[SaleOut]
+    total: int

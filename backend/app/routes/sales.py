@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from datetime import datetime
 from ..database import SessionLocal
 from ..models import Sale
-from ..schemas import SaleCreate, SaleOut, SaleUpdate
+from ..schemas import SaleCreate, SaleOut, SaleUpdate, SalesPage
 from ..auth import get_current_user
 from sqlalchemy import or_
 
@@ -28,7 +28,7 @@ def create_sale(
     db.refresh(new_sale)
     return new_sale
 
-@router.get("/", response_model=list[SaleOut])
+@router.get("/", response_model=SalesPage)
 def list_sales(
     db: Session = Depends(get_db),
     user=Depends(get_current_user),
