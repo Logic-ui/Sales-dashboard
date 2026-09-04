@@ -899,3 +899,77 @@ input[placeholder] {
     border-radius: 8px;
   }
 }
+
+/* Theme overrides */
+[data-theme="dark"] {
+  --light: #101b19;
+  --lighter: #182724;
+  --dark: #edf5ef;
+  --gray: #aab9b0;
+  --border: #30413c;
+}
+
+[data-theme="dark"] body,
+[data-theme="dark"] .dashboard-container {
+  background: #101b19;
+  color: var(--dark);
+}
+
+[data-theme="dark"] .auth-box,
+[data-theme="dark"] .stat-card,
+[data-theme="dark"] .table-container,
+[data-theme="dark"] .sales-form,
+[data-theme="dark"] .chart-container {
+  background: #182724;
+  color: var(--dark);
+}
+
+[data-theme="dark"] .sales-table,
+[data-theme="dark"] .sales-table td,
+[data-theme="dark"] .form-control input,
+[data-theme="dark"] .form-control select,
+[data-theme="dark"] .auth-form input,
+[data-theme="dark"] input[placeholder] {
+  background: #182724;
+  color: var(--dark);
+  border-color: var(--border);
+}
+
+[data-theme="dark"] .sales-table td {
+  border-bottom-color: var(--border);
+}
+
+[data-theme="dark"] .sales-table tbody tr:hover {
+  background: #213630;
+}
+
+[data-theme="dark"] .form-group label,
+[data-theme="dark"] .form-control label,
+[data-theme="dark"] .auth-box .subtitle,
+[data-theme="dark"] .auth-link,
+[data-theme="dark"] .stat-card h3 {
+  color: var(--gray);
+}
+
+[data-theme="dark"] .btn-secondary {
+  background: #263a35;
+  color: var(--dark);
+  border-color: var(--border);
+}
+
+.theme-toggle {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid rgba(255,255,255,0.24);
+  border-radius: 50%;
+  background: rgba(255,255,255,0.1);
+  color: #f4f1ea;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.theme-toggle:hover {
+  background: var(--secondary);
+  transform: rotate(12deg);
+}

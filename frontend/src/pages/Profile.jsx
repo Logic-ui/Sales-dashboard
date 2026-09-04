@@ -38,15 +38,6 @@ export default function Profile() {
     fetchAll();
   }, [navigate]);
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    navigate("/");
-  };
-
-  const handleNavigation = (path) => {
-    navigate(path);
-  };
-
   const saveProfile = async (e) => {
     e.preventDefault();
     setError("");
@@ -77,17 +68,6 @@ export default function Profile() {
     <div className="dashboard-container">
       <div className="dashboard-header">
         <h1>👤 Profile</h1>
-        <div className="nav-buttons">
-          <button className="nav-btn" onClick={() => handleNavigation("/dashboard")}>
-            📊 Dashboard
-          </button>
-          <button className="nav-btn" onClick={() => handleNavigation("/sales")}>
-            📈 Sales
-          </button>
-          <button className="logout-btn" onClick={handleLogout}>
-            🚪 Logout
-          </button>
-        </div>
       </div>
 
       <div className="dashboard-main">

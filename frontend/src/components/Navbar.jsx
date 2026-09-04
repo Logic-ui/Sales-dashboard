@@ -6,6 +6,12 @@ export default function Navbar() {
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
   const [email, setEmail] = useState("");
+  const [darkMode, setDarkMode] = useState(() => localStorage.getItem("theme") === "dark");
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = darkMode ? "dark" : "light";
+    localStorage.setItem("theme", darkMode ? "dark" : "light");
+  }, [darkMode]);
 
   useEffect(() => {
     if (!token) return;
@@ -45,6 +51,14 @@ export default function Navbar() {
       </div>
 
       <div className="nav-right">
+        <button
+          className="theme-toggle"
+          onClick={() => setDarkMode((current) => !current)}
+          aria-label={darkMode ? "Use light theme" : "Use dark theme"}
+          title={darkMode ? "Light theme" : "Dark theme"}
+        >
+          {darkMode ? "☀" : "◐"}
+        </button>
         {token ? (
           <>
             {email && <div className="nav-user">{email}</div>}

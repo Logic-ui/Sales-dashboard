@@ -66,30 +66,10 @@ export default function Sales() {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    navigate("/");
-  };
-
-  const handleNavigation = (path) => {
-    navigate(path);
-  };
-
   return (
     <div className="dashboard-container">
       <div className="dashboard-header">
         <h1>📈 Sales Management</h1>
-        <div className="nav-buttons">
-          <button className="nav-btn" onClick={() => handleNavigation("/dashboard")}>
-            📊 Dashboard
-          </button>
-          <button className="nav-btn" onClick={() => handleNavigation("/profile")}>
-            👤 Profile
-          </button>
-          <button className="logout-btn" onClick={handleLogout}>
-            🚪 Logout
-          </button>
-        </div>
       </div>
 
       <div className="dashboard-main">
