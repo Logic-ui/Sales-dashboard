@@ -1,8 +1,15 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api/axios";
+// import React, { useState } from "react";
 
 export default function Sales() {
+  const [q, setQ] = useState("");
+  const [sort, setSort] = useState("created_at");
+  const [order, setOrder] = useState("desc");
+  const [limit, setLimit] = useState(20);
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
   const [sales, setSales] = useState([]);
   const [amount, setAmount] = useState("");
   const [product, setProduct] = useState("");
@@ -11,11 +18,14 @@ export default function Sales() {
   const [success, setSuccess] = useState("");
   const navigate = useNavigate();
 
-  const load = async () => {
+  const load = async (params = {}) => {
     try {
       setLoading(true);
-      const res = await api.get("/sales");
-      setSales(res.data);
+      const res = await api.get("/sales", {
+        params: { page, limit, q, sort, order, ...params },
+      });
+      setSales(res.data.items);
+      setTotal(res.data.total);
     } catch (err) {
       setError("Failed to load sales data");
       console.error(err);
