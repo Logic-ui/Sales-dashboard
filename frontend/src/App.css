@@ -8,22 +8,21 @@
 }
 
 :root {
-  --primary: #667eea;
-  --primary-dark: #764ba2;
-  --secondary: #764ba2;
-  --success: #51cf66;
-  --warning: #ffd43b;
-  --danger: #ff6b6b;
-  --light: #f0f2f5;
-  --lighter: #f9f9f9;
-  --gray: #999;
-  --dark: #333;
-  --border: #e0e0e0;
+  --primary: #0d6b62;
+  --primary-dark: #084c45;
+  --secondary: #f26b4f;
+  --success: #0d8b72;
+  --warning: #e4a72c;
+  --danger: #c94b4b;
+  --light: #f4f1ea;
+  --lighter: #fbfaf7;
+  --gray: #7c817d;
+  --dark: #172522;
+  --border: #d9ddd5;
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica', 'Arial', sans-serif;
+  font-family: "Trebuchet MS", "Segoe UI", sans-serif;
   background: var(--light);
   color: var(--dark);
   line-height: 1.6;
@@ -223,7 +222,7 @@ a:hover {
   align-items: center;
   min-height: 100vh;
   width: 100%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #172522;
   position: relative;
   overflow: hidden;
   padding: 20px;
@@ -234,7 +233,7 @@ a:hover {
   position: absolute;
   width: 400px;
   height: 400px;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(75, 190, 166, 0.18);
   border-radius: 50%;
   top: -100px;
   left: -100px;
@@ -246,7 +245,7 @@ a:hover {
   position: absolute;
   width: 300px;
   height: 300px;
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(242, 107, 79, 0.2);
   border-radius: 50%;
   bottom: -50px;
   right: -50px;
@@ -254,9 +253,9 @@ a:hover {
 }
 
 .auth-box {
-  background: white;
+  background: #fbfaf7;
   padding: 50px 45px;
-  border-radius: 16px;
+  border-radius: 4px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
   width: 100%;
   max-width: 450px;
@@ -272,7 +271,8 @@ a:hover {
   color: var(--dark);
   font-size: 32px;
   font-weight: 700;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: var(--primary);
+  background: none;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -293,9 +293,9 @@ a:hover {
   justify-content: space-between;
   align-items: center;
   padding: 12px 28px;
-  background: white;
-  border-bottom: 1px solid var(--border);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.06);
+  background: #172522;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  box-shadow: 0 4px 18px rgba(23,37,34,0.16);
   position: sticky;
   top: 0;
   z-index: 60;
@@ -303,7 +303,7 @@ a:hover {
 
 .site-navbar .brand {
   font-weight: 800;
-  color: var(--primary);
+  color: #f4f1ea;
   font-size: 18px;
   margin-right: 20px;
 }
@@ -316,15 +316,15 @@ a:hover {
 
 .nav-link {
   padding: 8px 12px;
-  color: #444;
+  color: #dce6df;
   border-radius: 8px;
   font-weight: 600;
   transition: all 0.2s ease;
 }
 
 .nav-link:hover {
-  background: rgba(102, 126, 234, 0.08);
-  color: var(--primary);
+  background: rgba(255,255,255,0.1);
+  color: #8ce0c4;
   transform: translateY(-2px);
 }
 
@@ -350,7 +350,7 @@ a:hover {
 }
 
 .nav-register {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--secondary);
   color: white;
   padding: 8px 12px;
   border-radius: 8px;
@@ -405,16 +405,16 @@ input[placeholder] {
   flex-direction: column;
   min-height: 100vh;
   width: 100%;
-  background: var(--light);
+  background: radial-gradient(circle at 10% 0%, #fffdf8 0, var(--light) 42%, #e8eee8 100%);
 }
 
 .dashboard-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #172522;
   padding: 25px 40px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 4px 20px rgba(102, 126, 234, 0.2);
+  box-shadow: 0 8px 24px rgba(23,37,34,0.15);
   color: white;
   animation: slideDown 0.5s ease-out;
   flex-wrap: wrap;
@@ -440,7 +440,7 @@ input[placeholder] {
   background: rgba(255, 255, 255, 0.2);
   color: white;
   border: 2px solid white;
-  border-radius: 6px;
+  border-radius: 3px;
   cursor: pointer;
   font-weight: 600;
   transition: all 0.3s ease;
@@ -457,7 +457,7 @@ input[placeholder] {
 
 .logout-btn {
   padding: 10px 20px;
-  background: var(--danger);
+  background: var(--secondary);
   color: white;
   border: none;
   border-radius: 6px;
@@ -493,16 +493,16 @@ input[placeholder] {
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 20px;
+  gap: 16px;
   margin-bottom: 40px;
 }
 
 .stat-card {
-  background: white;
+  background: rgba(255,255,255,0.82);
   padding: 25px;
-  border-radius: 12px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-  border-left: 5px solid var(--primary);
+  border-radius: 4px;
+  box-shadow: 0 8px 24px rgba(23,37,34,0.07);
+  border-left: 4px solid var(--primary);
   transition: all 0.3s ease;
   animation: slideUp 0.5s ease-out;
 }
@@ -545,9 +545,9 @@ input[placeholder] {
 
 /* ============ TABLE STYLES ============ */
 .table-container {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  background: rgba(255,255,255,0.9);
+  border-radius: 4px;
+  box-shadow: 0 8px 24px rgba(23,37,34,0.07);
   overflow: hidden;
   animation: fadeIn 0.5s ease-out;
 }
@@ -559,7 +559,7 @@ input[placeholder] {
 }
 
 .sales-table thead {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--primary);
   color: white;
 }
 
@@ -611,10 +611,10 @@ input[placeholder] {
 
 /* ============ FORM STYLES ============ */
 .sales-form {
-  background: white;
+  background: rgba(255,255,255,0.9);
   padding: 30px;
-  border-radius: 12px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  border-radius: 4px;
+  box-shadow: 0 8px 24px rgba(23,37,34,0.07);
   margin-bottom: 30px;
   animation: slideUp 0.5s ease-out;
 }
@@ -692,7 +692,7 @@ input[placeholder] {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--primary);
   color: white;
   box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
 }
@@ -725,7 +725,7 @@ input[placeholder] {
 }
 
 .btn-success {
-  background: var(--success);
+  background: var(--primary);
   color: white;
   box-shadow: 0 4px 15px rgba(81, 207, 102, 0.3);
 }
@@ -743,10 +743,10 @@ input[placeholder] {
 
 /* ============ CHART STYLES ============ */
 .chart-container {
-  background: white;
+  background: rgba(255,255,255,0.9);
   padding: 30px;
-  border-radius: 12px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  border-radius: 4px;
+  box-shadow: 0 8px 24px rgba(23,37,34,0.07);
   margin-bottom: 30px;
   animation: fadeIn 0.5s ease-out;
 }
