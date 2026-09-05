@@ -44,7 +44,7 @@ export default function Login() {
         // eslint-disable-next-line no-console
         console.error("API baseURL:", api.defaults.baseURL);
         setError(
-          `Cannot connect to server (base: ${api.defaults.baseURL}). Make sure backend is running on :8000`
+          `Cannot connect to server (base: ${api.defaults.baseURL}). Check that the backend deployment is available.`
         );
       } else {
         setError("Login failed. Please try again.");

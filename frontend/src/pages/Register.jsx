@@ -58,7 +58,7 @@ export default function Register() {
       } else if (err.response?.data?.detail) {
         setError(err.response.data.detail);
       } else if (err.message === "Network Error") {
-        setError("Cannot connect to server. Make sure backend is running on port 8000.");
+        setError("Cannot connect to server. Check that the backend deployment is available.");
       } else {
         setError(err.response?.data?.detail || "Registration failed. Please try again.");
       }

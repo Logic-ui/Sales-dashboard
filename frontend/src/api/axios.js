@@ -1,14 +1,12 @@
 import axios from "axios";
 
-// Build a safe default base URL:
-// - Use explicit REACT_APP_API_URL when provided
-// - Otherwise target the same host that served the frontend, port 8000
-//   This avoids "Cannot connect to server" when accessing the UI via
-//   server IP/domain (where "localhost" would point to the client machine).
+// Use the deployed API in production and the local backend during development.
 const host = typeof window !== "undefined" ? window.location.hostname : "localhost";
 const protocol = typeof window !== "undefined" ? window.location.protocol : "http:";
 const apiPort = process.env.REACT_APP_API_PORT || "8000";
-const defaultBase = `${protocol}//${host}:${apiPort}`;
+const localBase = `${protocol}//${host}:${apiPort}`;
+const productionBase = "https://sales-dashboard-six-delta.vercel.app";
+const defaultBase = process.env.NODE_ENV === "production" ? productionBase : localBase;
 
 const api = axios.create({
   baseURL: process.env.REACT_APP_API_URL || defaultBase,
