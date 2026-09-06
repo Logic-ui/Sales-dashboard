@@ -17,7 +17,6 @@ def get_db():
         db.close()
 
 @router.post("/register")
-@router.post("/register/")
 def register(user: UserCreate, db: Session = Depends(get_db)):
     if not user.email:
         raise HTTPException(status_code=400, detail="Email is required")
@@ -47,9 +46,7 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail="Registration failed. Please try again.")
 
 @router.post("/login", response_model=Token)
-@router.post("/login/", response_model=Token)
 def login(user: UserCreate, db: Session = Depends(get_db)):
-
     if not user.email or not user.password:
         raise HTTPException(status_code=400, detail="Please provide both email and password")
         
