@@ -12,14 +12,34 @@ repair_legacy_sale_owners()
 
 app = FastAPI(title="Sales Dashboard API")
 
-# Enable CORS
+# Enable CORS for all clients (JWT Bearer tokens do not need cookies)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=True,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+def ensure_default_admin():
+    try:
+        from .database import SessionLocal
+        from .models import User
+        from .utils.hashing import hash_password
+        db = SessionLocal()
+        if db.query(User).count() == 0:
+            default_user = User(
+                email="admin@saleshub.com",
+                password=hash_password("admin123")
+            )
+            db.add(default_user)
+            db.commit()
+            print("[Init] Created default admin user: admin@saleshub.com / admin123")
+        db.close()
+    except Exception as e:
+        print(f"[Init] Admin seed note: {e}")
+
+ensure_default_admin()
 
 frontend_build_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "frontend", "build"))
 if not os.path.exists(frontend_build_dir):
@@ -32,24 +52,31 @@ index_file = os.path.join(frontend_build_dir, "index.html")
 async def spa_middleware(request: Request, call_next):
     if request.method == "GET" and "text/html" in request.headers.get("accept", ""):
         path = request.url.path
-        if not path.startswith(("/docs", "/redoc", "/openapi.json", "/static", "/favicon", "/manifest", "/ping")):
+        if not path.startswith(("/docs", "/redoc", "/openapi.json", "/static", "/favicon", "/manifest", "/ping", "/api")):
             if os.path.exists(index_file):
                 return FileResponse(index_file)
     return await call_next(request)
 
-app.include_router(auth.router)
-app.include_router(sales.router)
-app.include_router(products.router)
-app.include_router(pos.router)
-app.include_router(customers.router)
-app.include_router(coupons.router)
-app.include_router(dashboard.router)
-app.include_router(users.router)
+api_routers = [
+    auth.router,
+    sales.router,
+    products.router,
+    pos.router,
+    customers.router,
+    coupons.router,
+    dashboard.router,
+    users.router,
+]
+for r in api_routers:
+    app.include_router(r)
+    app.include_router(r, prefix="/api")
 
-# Simple health endpoint for quick checks
+# Health endpoints
 @app.get("/ping")
+@app.get("/api/ping")
 def ping():
     return {"status": "ok"}
+
 
 if os.path.exists(frontend_build_dir):
     static_dir = os.path.join(frontend_build_dir, "static")

@@ -9,6 +9,7 @@ export default function Dashboard() {
   const [productData, setProductData] = useState([]);
   const [recentActivity, setRecentActivity] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
   const [timeRange, setTimeRange] = useState(30); // 7, 30, 90, or null (all)
   const [chartMetric, setChartMetric] = useState("revenue"); // 'revenue' | 'orders'
   const [chartType, setChartType] = useState("area"); // 'area' | 'bar'
@@ -36,25 +37,57 @@ export default function Dashboard() {
   const fetchDashboardData = useCallback(async () => {
     try {
       setLoading(true);
+      setLoadError("");
       const daysParam = timeRange ? `?days=${timeRange}` : "";
-      const [sumRes, chartRes, prodRes, recentRes, catProdsRes] = await Promise.all([
+      const results = await Promise.allSettled([
         api.get("/dashboard/summary"),
         api.get(`/dashboard/chart-data${daysParam}`),
         api.get("/dashboard/product-breakdown"),
         api.get("/dashboard/recent-activity?limit=6"),
         api.get("/products?limit=50"),
       ]);
-      setSummary(sumRes.data || {});
-      setChartData(Array.isArray(chartRes.data) ? chartRes.data : []);
-      setProductData(Array.isArray(prodRes.data) ? prodRes.data : []);
-      setRecentActivity(Array.isArray(recentRes.data) ? recentRes.data : []);
-      setCatalogProducts(catProdsRes.data?.items || []);
+
+      const [sumRes, chartRes, prodRes, recentRes, catProdsRes] = results;
+
+      let anySuccess = false;
+      if (sumRes.status === "fulfilled") {
+        setSummary(sumRes.value.data || {});
+        anySuccess = true;
+      }
+      if (chartRes.status === "fulfilled") {
+        setChartData(Array.isArray(chartRes.value.data) ? chartRes.value.data : []);
+        anySuccess = true;
+      }
+      if (prodRes.status === "fulfilled") {
+        setProductData(Array.isArray(prodRes.value.data) ? prodRes.value.data : []);
+      }
+      if (recentRes.status === "fulfilled") {
+        setRecentActivity(Array.isArray(recentRes.value.data) ? recentRes.value.data : []);
+      }
+      if (catProdsRes.status === "fulfilled") {
+        setCatalogProducts(catProdsRes.value.data?.items || []);
+      }
+
+      // Check if 401 unauthorized occurred
+      const isUnauthorized = results.some(
+        (r) => r.status === "rejected" && r.reason?.response?.status === 401
+      );
+      if (isUnauthorized) {
+        localStorage.removeItem("token");
+        navigate("/");
+        return;
+      }
+
+      if (!anySuccess) {
+        setLoadError("Unable to fetch dashboard metrics. Please verify backend connection.");
+      }
     } catch (err) {
       console.error("Failed to load dashboard data:", err);
+      setLoadError("Failed to load dashboard data. Please try again.");
     } finally {
       setLoading(false);
     }
-  }, [timeRange]);
+  }, [timeRange, navigate]);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -64,6 +97,7 @@ export default function Dashboard() {
     }
     fetchDashboardData();
   }, [navigate, fetchDashboardData]);
+
 
   // Quick record sale
   const handleQuickSale = async (e) => {
@@ -276,8 +310,22 @@ export default function Dashboard() {
         </div>
       ) : (
         <>
+          {/* Error Alert Banner */}
+          {loadError && (
+            <div className="dashboard-alert-banner" style={{ background: "rgba(239, 68, 68, 0.15)", borderColor: "rgba(239, 68, 68, 0.4)", color: "#f87171" }}>
+              <div className="alert-content">
+                <span className="alert-icon">⚠️</span>
+                <div>{loadError}</div>
+              </div>
+              <button onClick={fetchDashboardData} className="alert-link-btn" style={{ background: "#ef4444", color: "#fff", cursor: "pointer", border: "none" }}>
+                Retry
+              </button>
+            </div>
+          )}
+
           {/* Low Stock Alert Banner */}
           {summary.low_stock_count > 0 && (
+
             <div className="dashboard-alert-banner warning">
               <div className="alert-content">
                 <span className="alert-icon">⚠️</span>

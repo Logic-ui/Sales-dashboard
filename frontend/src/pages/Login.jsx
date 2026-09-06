@@ -21,12 +21,14 @@ export default function Login() {
     setLoading(true);
 
     try {
+      const cleanEmail = email.trim().toLowerCase();
       const res = await api.post("/auth/login", { 
-        email: email.trim(), 
+        email: cleanEmail, 
         password 
       });
       
       if (res.data && res.data.access_token) {
+        localStorage.removeItem("token");
         localStorage.setItem("token", res.data.access_token);
         navigate("/dashboard");
       }

@@ -1,4 +1,46 @@
 {
   "buildCommand": "npm --prefix frontend ci && npm --prefix frontend run build",
-  "outputDirectory": "frontend/build"
+  "outputDirectory": "frontend/build",
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/index.py"
+    },
+    {
+      "source": "/auth/(.*)",
+      "destination": "/api/index.py"
+    },
+    {
+      "source": "/dashboard/(.*)",
+      "destination": "/api/index.py"
+    },
+    {
+      "source": "/pos/(.*)",
+      "destination": "/api/index.py"
+    },
+    {
+      "source": "/coupons/(.*)",
+      "destination": "/api/index.py"
+    },
+    {
+      "source": "/users/(.*)",
+      "destination": "/api/index.py"
+    },
+    {
+      "source": "/ping",
+      "destination": "/api/index.py"
+    },
+    {
+      "source": "/docs",
+      "destination": "/api/index.py"
+    },
+    {
+      "source": "/openapi.json",
+      "destination": "/api/index.py"
+    },
+    {
+      "source": "/((?!api/|static/|favicon.ico|manifest.json|images/).*)",
+      "destination": "/index.html"
+    }
+  ]
 }

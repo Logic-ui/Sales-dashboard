@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from ..database import SessionLocal
 from ..models import User
 from ..schemas import UserCreate, Token
@@ -17,12 +18,15 @@ def get_db():
 
 @router.post("/register")
 def register(user: UserCreate, db: Session = Depends(get_db)):
-    # Validate email format
-    if not user.email or "@" not in user.email:
+    if not user.email:
+        raise HTTPException(status_code=400, detail="Email is required")
+    
+    clean_email = user.email.strip().lower()
+    if "@" not in clean_email or len(clean_email) < 3:
         raise HTTPException(status_code=400, detail="Invalid email format")
     
-    # Check if user already exists
-    db_user = db.query(User).filter(User.email == user.email).first()
+    # Check if user already exists (case-insensitive)
+    db_user = db.query(User).filter(func.lower(User.email) == clean_email).first()
     if db_user:
         raise HTTPException(status_code=400, detail="Email already in use")
     
@@ -32,7 +36,7 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
 
     # Create and save user
     try:
-        new_user = User(email=user.email, password=hash_password(user.password))
+        new_user = User(email=clean_email, password=hash_password(user.password))
         db.add(new_user)
         db.commit()
         db.refresh(new_user)
@@ -43,9 +47,14 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
 
 @router.post("/login", response_model=Token)
 def login(user: UserCreate, db: Session = Depends(get_db)):
-    db_user = db.query(User).filter(User.email == user.email).first()
+    if not user.email or not user.password:
+        raise HTTPException(status_code=400, detail="Please provide both email and password")
+        
+    clean_email = user.email.strip().lower()
+    db_user = db.query(User).filter(func.lower(User.email) == clean_email).first()
     if not db_user or not verify_password(user.password, db_user.password):
-        raise HTTPException(status_code=401, detail="Invalid credentials")
+        raise HTTPException(status_code=401, detail="Invalid email or password")
 
-    token = create_access_token({"sub": db_user.email})
+    token = create_access_token({"sub": db_user.email, "id": db_user.id})
     return {"access_token": token, "token_type": "bearer"}
+

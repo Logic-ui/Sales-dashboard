@@ -38,16 +38,18 @@ export default function Register() {
     setLoading(true);
 
     try {
-      const response = await api.post("/auth/register", { 
-        email: email.trim(), 
+      const cleanEmail = email.trim().toLowerCase();
+      await api.post("/auth/register", { 
+        email: cleanEmail, 
         password 
       });
       
       // Auto login after successful registration
       const loginRes = await api.post("/auth/login", { 
-        email: email.trim(), 
+        email: cleanEmail, 
         password 
       });
+      localStorage.removeItem("token");
       localStorage.setItem("token", loginRes.data.access_token);
       navigate("/dashboard");
     } catch (err) {
