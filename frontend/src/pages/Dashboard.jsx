@@ -231,18 +231,21 @@ export default function Dashboard() {
             >
               7D
             </button>
+
             <button
               className={`filter-btn ${timeRange === 30 ? "active" : ""}`}
               onClick={() => setTimeRange(30)}
             >
               30D
             </button>
+
             <button
               className={`filter-btn ${timeRange === 90 ? "active" : ""}`}
               onClick={() => setTimeRange(90)}
             >
               90D
             </button>
+
             <button
               className={`filter-btn ${timeRange === null ? "active" : ""}`}
               onClick={() => setTimeRange(null)}
@@ -251,8 +254,14 @@ export default function Dashboard() {
             </button>
           </div>
 
-          <button className="btn-primary-gradient" onClick={() => setShowModal(true)}>
-            <span className="btn-icon">⚡</span> Record Sale
+          <Link to="/pos" className="btn-primary-gradient pos-hero-cta" title="Open multi-item POS checkout terminal">
+            <span className="btn-icon">🛒</span> Open POS Terminal
+          </Link>
+          <Link to="/inventory" className="filter-btn" title="Manage catalog and inventory">
+            <span className="btn-icon">📦</span> Inventory
+          </Link>
+          <button className="filter-btn" onClick={() => setShowModal(true)} title="Quick single sale">
+            <span className="btn-icon">⚡</span> Quick Sale
           </button>
         </div>
       </div>
@@ -264,6 +273,21 @@ export default function Dashboard() {
         </div>
       ) : (
         <>
+          {/* Low Stock Alert Banner */}
+          {summary.low_stock_count > 0 && (
+            <div className="dashboard-alert-banner warning">
+              <div className="alert-content">
+                <span className="alert-icon">⚠️</span>
+                <div>
+                  <strong>Low Stock Warning:</strong> {summary.low_stock_count} {summary.low_stock_count === 1 ? "product has" : "products have"} reached or dropped below reorder thresholds!
+                </div>
+              </div>
+              <Link to="/inventory" className="alert-link-btn">
+                Restock Now &rarr;
+              </Link>
+            </div>
+          )}
+
           {/* Executive KPI Grid */}
           <div className="kpi-grid">
             {/* Card 1: Total Revenue */}
@@ -275,15 +299,28 @@ export default function Dashboard() {
               <div className="kpi-value">${(summary.total_revenue || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
               <div className="kpi-footer">
                 <span className="kpi-pill pill-success">↑ Cumulative</span>
-                <span className="kpi-hint">All-time transactions</span>
+                <span className="kpi-hint">Gross receipts</span>
               </div>
             </div>
 
-            {/* Card 2: This Month */}
+            {/* Card 2: Net Profit & Margin */}
+            <div className="kpi-card card-profit">
+              <div className="kpi-header">
+                <span className="kpi-title">Net Profit</span>
+                <div className="kpi-icon icon-emerald">💵</div>
+              </div>
+              <div className="kpi-value text-success">${(summary.total_profit || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+              <div className="kpi-footer">
+                <span className="kpi-pill pill-success">+{summary.profit_margin || 0}% Margin</span>
+                <span className="kpi-hint">Revenue &minus; Cost</span>
+              </div>
+            </div>
+
+            {/* Card 3: This Month */}
             <div className="kpi-card card-month">
               <div className="kpi-header">
                 <span className="kpi-title">This Month</span>
-                <div className="kpi-icon icon-emerald">📈</div>
+                <div className="kpi-icon icon-cyan">📈</div>
               </div>
               <div className="kpi-value">${(summary.month || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
               <div className="kpi-footer">
@@ -292,7 +329,7 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Card 3: Total Orders */}
+            {/* Card 4: Total Orders */}
             <div className="kpi-card card-orders">
               <div className="kpi-header">
                 <span className="kpi-title">Total Transactions</span>
@@ -305,16 +342,33 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Card 4: Average Order Value */}
+            {/* Card 5: Average Order Value */}
             <div className="kpi-card card-aov">
               <div className="kpi-header">
                 <span className="kpi-title">Avg Order Value</span>
-                <div className="kpi-icon icon-cyan">💎</div>
+                <div className="kpi-icon icon-rose">💎</div>
               </div>
               <div className="kpi-value">${(summary.avg_order_value || 0).toFixed(2)}</div>
               <div className="kpi-footer">
                 <span className="kpi-pill pill-cyan">Top Star</span>
                 <span className="kpi-hint truncate" title={summary.top_product}>{summary.top_product || "None"}</span>
+              </div>
+            </div>
+
+            {/* Card 6: Catalog & Stock Status */}
+            <div className="kpi-card card-inventory-stat">
+              <div className="kpi-header">
+                <span className="kpi-title">Catalog & Stock</span>
+                <div className="kpi-icon icon-purple">📦</div>
+              </div>
+              <div className="kpi-value">{summary.total_products || 0} <span style={{ fontSize: "0.85rem", fontWeight: "normal", color: "var(--text-muted)" }}>Products</span></div>
+              <div className="kpi-footer">
+                {summary.low_stock_count > 0 ? (
+                  <span className="kpi-pill pill-amber">{summary.low_stock_count} Low Stock</span>
+                ) : (
+                  <span className="kpi-pill pill-success">Stock Healthy</span>
+                )}
+                <Link to="/inventory" className="kpi-hint" style={{ color: "var(--primary)", textDecoration: "underline" }}>View catalog</Link>
               </div>
             </div>
           </div>
@@ -463,11 +517,11 @@ export default function Dashboard() {
                           <div className="stream-time">
                             {sale.created_at
                               ? new Date(sale.created_at).toLocaleDateString(undefined, {
-                                  month: "short",
-                                  day: "numeric",
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                })
+                                month: "short",
+                                day: "numeric",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })
                               : "Recent"}
                           </div>
                         </div>

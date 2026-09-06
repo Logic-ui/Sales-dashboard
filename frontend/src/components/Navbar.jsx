@@ -38,13 +38,19 @@ export default function Navbar() {
 
         {token && (
           <div className="nav-links">
-            <Link to="/dashboard" className="nav-link">
+            <Link to="/pos" className="nav-link nav-pos-highlight" title="Point of Sale Checkout Terminal">
+              🛒 POS Terminal
+            </Link>
+            <Link to="/inventory" className="nav-link" title="Product catalog & stock tracking">
+              📦 Inventory
+            </Link>
+            <Link to="/dashboard" className="nav-link" title="Executive metrics and charts">
               📊 Dashboard
             </Link>
-            <Link to="/sales" className="nav-link">
+            <Link to="/sales" className="nav-link" title="Sales history and log">
               📈 Sales
             </Link>
-            <Link to="/profile" className="nav-link">
+            <Link to="/profile" className="nav-link" title="User account settings">
               👤 Profile
             </Link>
           </div>

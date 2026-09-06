@@ -4,7 +4,7 @@ from sqlalchemy import func, desc
 from datetime import datetime, timedelta
 from typing import Optional
 from ..database import SessionLocal
-from ..models import Sale
+from ..models import Sale, Product
 from ..auth import get_current_user
 
 router = APIRouter(prefix="/dashboard", tags=["Dashboard"])
@@ -42,6 +42,18 @@ def sales_summary(db: Session = Depends(get_db), user=Depends(get_current_user))
     total_orders = db.query(func.count(Sale.id)).scalar() or 0
     avg_order_value = (total_revenue / total_orders) if total_orders > 0 else 0.0
 
+    # Profit metrics
+    total_profit = db.query(func.sum(Sale.net_profit)).scalar() or 0.0
+    total_cost = db.query(func.sum(Sale.total_cost)).scalar() or 0.0
+    profit_margin = ((total_profit / total_revenue) * 100) if total_revenue > 0 else 0.0
+
+    # Inventory alerts
+    total_products = db.query(Product).filter(Product.is_active == True).count()
+    low_stock_count = db.query(Product).filter(
+        Product.is_active == True,
+        Product.stock_quantity <= Product.min_stock_level,
+    ).count()
+
     # Best selling product
     top_prod = db.query(Sale.product, func.sum(Sale.amount).label("sum_amt")) \
         .group_by(Sale.product) \
@@ -57,6 +69,11 @@ def sales_summary(db: Session = Depends(get_db), user=Depends(get_current_user))
         "total_revenue": round(float(total_revenue), 2),
         "total_orders": total_orders,
         "avg_order_value": round(float(avg_order_value), 2),
+        "total_profit": round(float(total_profit), 2),
+        "total_cost": round(float(total_cost), 2),
+        "profit_margin": round(float(profit_margin), 1),
+        "total_products": total_products,
+        "low_stock_count": low_stock_count,
         "top_product": top_product_name,
     }
 

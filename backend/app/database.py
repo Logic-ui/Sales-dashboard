@@ -57,3 +57,28 @@ def repair_legacy_sale_owners():
                 ))
     except Exception:
         pass
+
+def migrate_schema():
+    """Safely adds missing columns to existing tables without data loss."""
+    new_sales_columns = [
+        ("invoice_no", "VARCHAR"),
+        ("customer_name", "VARCHAR"),
+        ("customer_phone", "VARCHAR"),
+        ("payment_method", "VARCHAR DEFAULT 'cash'"),
+        ("discount", "FLOAT DEFAULT 0.0"),
+        ("tax", "FLOAT DEFAULT 0.0"),
+        ("total_cost", "FLOAT DEFAULT 0.0"),
+        ("net_profit", "FLOAT DEFAULT 0.0"),
+        ("notes", "TEXT"),
+    ]
+    try:
+        with engine.begin() as conn:
+            for col_name, col_type in new_sales_columns:
+                try:
+                    conn.execute(text(f"ALTER TABLE sales ADD COLUMN {col_name} {col_type}"))
+                except Exception:
+                    # Column already exists
+                    pass
+    except Exception as e:
+        print(f"[Database] Migration note: {e}")
+

@@ -23,7 +23,18 @@ def create_sale(
     db: Session = Depends(get_db),
     user=Depends(get_current_user)
 ):
-    new_sale = Sale(**sale.dict(), user_id=user.id)  # Capture user_id from auth
+    today_str = datetime.utcnow().strftime("%Y%m%d")
+    count_today = db.query(Sale).filter(Sale.invoice_no.like(f"INV-{today_str}-%")).count() + 1
+    invoice_no = f"INV-{today_str}-{count_today:04d}"
+
+    new_sale = Sale(
+        amount=sale.amount,
+        product=sale.product,
+        invoice_no=invoice_no,
+        customer_name="Walk-in Customer",
+        payment_method="cash",
+        user_id=user.id,
+    )
     db.add(new_sale)
     db.commit()
     db.refresh(new_sale)
@@ -35,7 +46,7 @@ def list_sales(
     db: Session = Depends(get_db),
     user=Depends(get_current_user),
     mine: bool = False,
-    q: str | None = Query(None, description="Search term (product)"),
+    q: str | None = Query(None, description="Search term (product, customer, invoice)"),
     sort: str = Query("created_at", description="Sort field"),
     order: str = Query("desc", description="asc|desc"),
     page: int = Query(1, ge=1),
@@ -45,8 +56,14 @@ def list_sales(
     if mine:
         query = query.filter(Sale.user_id == user.id)
     if q:
-        qterm = f"%{q}%"
-        query = query.filter(Sale.product.ilike(qterm))
+        qterm = f"%{q.strip()}%"
+        query = query.filter(
+            or_(
+                Sale.product.ilike(qterm),
+                Sale.customer_name.ilike(qterm),
+                Sale.invoice_no.ilike(qterm),
+            )
+        )
 
     # Sorting
     if sort not in {"created_at", "amount", "product"}:
