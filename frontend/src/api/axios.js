@@ -1,17 +1,22 @@
 import axios from "axios";
 
-// Use the deployed API in production and the local backend during development.
-const host = process.env.NODE_ENV === "production"
-  ? window.location.hostname
-  : "127.0.0.1";
-const protocol = typeof window !== "undefined" ? window.location.protocol : "http:";
-const apiPort = process.env.REACT_APP_API_PORT || "8000";
-const localBase = `${protocol}//${host}:${apiPort}`;
-const productionBase = "https://sales-dashboard-six-delta.vercel.app";
-const defaultBase = process.env.NODE_ENV === "production" ? productionBase : localBase;
+const getBaseURL = () => {
+  if (process.env.REACT_APP_API_URL) {
+    return process.env.REACT_APP_API_URL;
+  }
+  if (typeof window !== "undefined") {
+    const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+    if (!isLocal) {
+      return window.location.origin;
+    }
+    const apiPort = process.env.REACT_APP_API_PORT || "8000";
+    return `http://127.0.0.1:${apiPort}`;
+  }
+  return "https://sales-dashboard-six-delta.vercel.app";
+};
 
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || defaultBase,
+  baseURL: getBaseURL(),
 });
 
 // Helpful: log configured API base URL to aid debugging (dev only)

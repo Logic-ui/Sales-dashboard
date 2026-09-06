@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import api from "../api/axios";
 
 export default function Login() {
@@ -93,7 +93,7 @@ export default function Login() {
         </form>
 
         <div className="auth-link">
-          Don't have an account? <a href="/register">Sign Up</a>
+          Don't have an account? <Link to="/register">Sign Up</Link>
         </div>
       </div>
     </div>

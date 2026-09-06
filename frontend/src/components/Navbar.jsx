@@ -32,19 +32,20 @@ export default function Navbar() {
     <nav className="site-navbar">
       <div className="nav-left">
         <Link to={token ? "/dashboard" : "/"} className="brand">
-          Sales Dashboard
+          <span className="brand-badge">⚡</span>
+          <span>Sales Hub</span>
         </Link>
 
         {token && (
           <div className="nav-links">
             <Link to="/dashboard" className="nav-link">
-              Dashboard
+              📊 Dashboard
             </Link>
             <Link to="/sales" className="nav-link">
-              Sales
+              📈 Sales
             </Link>
             <Link to="/profile" className="nav-link">
-              Profile
+              👤 Profile
             </Link>
           </div>
         )}
@@ -55,13 +56,18 @@ export default function Navbar() {
           className="theme-toggle"
           onClick={() => setDarkMode((current) => !current)}
           aria-label={darkMode ? "Use light theme" : "Use dark theme"}
-          title={darkMode ? "Light theme" : "Dark theme"}
+          title={darkMode ? "Switch to light theme" : "Switch to dark theme"}
         >
-          {darkMode ? "☀" : "◐"}
+          {darkMode ? "☀️" : "🌙"}
         </button>
         {token ? (
           <>
-            {email && <div className="nav-user">{email}</div>}
+            {email && (
+              <div className="nav-user-badge">
+                <span className="nav-avatar">{email.charAt(0).toUpperCase()}</span>
+                <span>{email}</span>
+              </div>
+            )}
             <button className="logout-sm" onClick={handleLogout}>
               Logout
             </button>
@@ -72,7 +78,7 @@ export default function Navbar() {
               Login
             </Link>
             <Link to="/register" className="nav-link nav-register">
-              Register
+              Get Started
             </Link>
           </>
         )}
