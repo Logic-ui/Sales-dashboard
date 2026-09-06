@@ -68,7 +68,7 @@ api_routers = [
     users.router,
 ]
 for r in api_routers:
-    app.include_router(r)
+    # app.include_router(r)
     app.include_router(r, prefix="/api")
 
 # Health endpoints
