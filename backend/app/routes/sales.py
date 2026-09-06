@@ -16,6 +16,7 @@ def get_db():
     finally:
         db.close()
 
+@router.post("", response_model=SaleOut)
 @router.post("/", response_model=SaleOut)
 def create_sale(
     sale: SaleCreate,
@@ -28,6 +29,7 @@ def create_sale(
     db.refresh(new_sale)
     return new_sale
 
+@router.get("", response_model=SalesPage)
 @router.get("/", response_model=SalesPage)
 def list_sales(
     db: Session = Depends(get_db),
