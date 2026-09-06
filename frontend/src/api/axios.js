@@ -1,7 +1,9 @@
 import axios from "axios";
 
 // Use the deployed API in production and the local backend during development.
-const host = typeof window !== "undefined" ? window.location.hostname : "localhost";
+const host = process.env.NODE_ENV === "production"
+  ? window.location.hostname
+  : "127.0.0.1";
 const protocol = typeof window !== "undefined" ? window.location.protocol : "http:";
 const apiPort = process.env.REACT_APP_API_PORT || "8000";
 const localBase = `${protocol}//${host}:${apiPort}`;
