@@ -21,7 +21,7 @@ export default function Sales() {
   const load = async (params = {}) => {
     try {
       setLoading(true);
-      const res = await api.get("/sales", {
+      const res = await api.get("/sales/", {
         params: { page, limit, q, sort, order, ...params },
       });
       setSales(res.data.items);
@@ -51,7 +51,7 @@ export default function Sales() {
     }
 
     try {
-      await api.post("/sales", { 
+      await api.post("/sales/", { 
         amount: parseFloat(amount), 
         product 
       });

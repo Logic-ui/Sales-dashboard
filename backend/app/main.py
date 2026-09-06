@@ -1,9 +1,10 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from .database import Base, engine
+from .database import Base, engine, repair_legacy_sale_owners
 from .routes import auth, sales, dashboard, users
 
 Base.metadata.create_all(bind=engine)
+repair_legacy_sale_owners()
 
 app = FastAPI(title="Sales Dashboard API")
 
