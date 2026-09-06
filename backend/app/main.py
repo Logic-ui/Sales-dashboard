@@ -10,7 +10,9 @@ Base.metadata.create_all(bind=engine)
 migrate_schema()
 repair_legacy_sale_owners()
 
-app = FastAPI(title="Sales Dashboard API")
+is_serverless = os.getenv("VERCEL") == "1" or "AWS_LAMBDA_FUNCTION_NAME" in os.environ
+
+app = FastAPI(title="Sales Dashboard API", redirect_slashes=False)
 
 # Enable CORS for all clients (JWT Bearer tokens do not need cookies)
 app.add_middleware(
@@ -47,15 +49,16 @@ if not os.path.exists(frontend_build_dir):
 
 index_file = os.path.join(frontend_build_dir, "index.html")
 
-# SPA Middleware: Return index.html for direct browser navigation
-@app.middleware("http")
-async def spa_middleware(request: Request, call_next):
-    if request.method == "GET" and "text/html" in request.headers.get("accept", ""):
-        path = request.url.path
-        if not path.startswith(("/docs", "/redoc", "/openapi.json", "/static", "/favicon", "/manifest", "/ping", "/api")):
-            if os.path.exists(index_file):
-                return FileResponse(index_file)
-    return await call_next(request)
+# SPA Middleware: only needed when running monolithically outside serverless
+if not is_serverless:
+    @app.middleware("http")
+    async def spa_middleware(request: Request, call_next):
+        if request.method == "GET" and "text/html" in request.headers.get("accept", ""):
+            path = request.url.path
+            if not path.startswith(("/docs", "/redoc", "/openapi.json", "/static", "/favicon", "/manifest", "/ping", "/api")):
+                if os.path.exists(index_file):
+                    return FileResponse(index_file)
+        return await call_next(request)
 
 api_routers = [
     auth.router,
@@ -78,7 +81,8 @@ def ping():
     return {"status": "ok"}
 
 
-if os.path.exists(frontend_build_dir):
+# Only mount static files and catch-all if running locally in standalone mode
+if not is_serverless and os.path.exists(frontend_build_dir):
     static_dir = os.path.join(frontend_build_dir, "static")
     if os.path.exists(static_dir):
         app.mount("/static", StaticFiles(directory=static_dir), name="static")
@@ -93,3 +97,4 @@ if os.path.exists(frontend_build_dir):
         if os.path.exists(index_file):
             return FileResponse(index_file)
         return {"detail": "Not Found"}
+
