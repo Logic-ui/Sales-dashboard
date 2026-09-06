@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api/axios";
-// import React, { useState } from "react";
+import ReceiptModal from "../components/ReceiptModal";
 
 export default function Sales() {
   const [q, setQ] = useState("");
@@ -16,7 +16,17 @@ export default function Sales() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [selectedReceipt, setSelectedReceipt] = useState(null);
   const navigate = useNavigate();
+
+  const handleViewReceipt = async (saleId) => {
+    try {
+      const res = await api.get(`/pos/receipt/${saleId}`);
+      setSelectedReceipt(res.data);
+    } catch {
+      setError("Could not load receipt for this sale.");
+    }
+  };
 
   const load = async (params = {}) => {
     try {
@@ -166,8 +176,10 @@ export default function Sales() {
             <table className="sales-table">
               <thead>
                 <tr>
-                  <th>ID</th>
-                  <th>Product</th>
+                  <th>Invoice #</th>
+                  <th>Customer</th>
+                  <th>Products Sold</th>
+                  <th>Payment</th>
                   <th>Amount</th>
                   <th>Date</th>
                   <th>Actions</th>
@@ -176,13 +188,36 @@ export default function Sales() {
               <tbody>
                 {sales.map((sale) => (
                   <tr key={sale.id}>
-                    <td>#{sale.id}</td>
-                    <td><strong>{sale.product}</strong></td>
-                    <td><strong>${parseFloat(sale.amount).toFixed(2)}</strong></td>
+                    <td>
+                      <span className="sku-badge">
+                        {sale.invoice_no || `#${sale.id}`}
+                      </span>
+                    </td>
+                    <td>
+                      <strong>{sale.customer_name || "Walk-in Customer"}</strong>
+                      {sale.customer_phone && <div style={{ fontSize: "0.76rem", color: "var(--text-muted)" }}>{sale.customer_phone}</div>}
+                    </td>
+                    <td><strong>{sale.product || "General Items"}</strong></td>
+                    <td>
+                      <span className="badge-payment" style={{ textTransform: "uppercase" }}>
+                        {sale.payment_method || "cash"}
+                      </span>
+                    </td>
+                    <td><strong style={{ color: "var(--primary)" }}>${parseFloat(sale.amount).toFixed(2)}</strong></td>
                     <td>{new Date(sale.created_at).toLocaleDateString()}</td>
                     <td>
-                      <button className="btn btn-secondary" onClick={() => handleEdit(sale)}>Edit</button>
-                      <button className="btn btn-danger" style={{ marginLeft: 8 }} onClick={() => handleDelete(sale.id)}>Delete</button>
+                      <div style={{ display: "flex", gap: 6 }}>
+                        <button
+                          className="btn"
+                          style={{ padding: "5px 10px", fontSize: "0.82rem", background: "var(--primary)", color: "#fff" }}
+                          onClick={() => handleViewReceipt(sale.id)}
+                          title="View and print thermal receipt"
+                        >
+                          🧾 Receipt
+                        </button>
+                        <button className="btn btn-secondary" style={{ padding: "5px 10px", fontSize: "0.82rem" }} onClick={() => handleEdit(sale)}>Edit</button>
+                        <button className="btn btn-danger" style={{ padding: "5px 10px", fontSize: "0.82rem" }} onClick={() => handleDelete(sale.id)}>Delete</button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -193,13 +228,20 @@ export default function Sales() {
               <div>Showing {sales.length} of {total} results</div>
               <div style={{ display: "flex", gap: 8 }}>
                 <button className="btn" onClick={() => { if (page > 1) { setPage(page - 1); load({ page: page - 1 }); } }} disabled={page === 1}>Prev</button>
-                <div style={{ padding: "8px 12px", background: "#fff", borderRadius: 6 }}>{page}</div>
+                <div style={{ padding: "8px 12px", background: "var(--bg-card)", borderRadius: 6 }}>{page}</div>
                 <button className="btn" onClick={() => { if (sales.length === limit) { setPage(page + 1); load({ page: page + 1 }); } }} disabled={sales.length < limit}>Next</button>
               </div>
             </div>
           </div>
         )}
       </div>
+
+      {selectedReceipt && (
+        <ReceiptModal
+          receipt={selectedReceipt}
+          onClose={() => setSelectedReceipt(null)}
+        />
+      )}
     </div>
   );
 }

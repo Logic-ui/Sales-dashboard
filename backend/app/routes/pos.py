@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from ..database import SessionLocal
-from ..models import Sale, SaleItem, Product
+from ..models import Sale, SaleItem, Product, Customer, Coupon
 from ..schemas import POSCheckoutRequest, POSCheckoutResponse, SaleItemOut
 from ..auth import get_current_user
 
@@ -27,6 +27,17 @@ def generate_invoice_no(db: Session) -> str:
         + 1
     )
     return f"INV-{today_str}-{count_today:04d}"
+
+def update_customer_tier(c: Customer):
+    spent = c.total_spent or 0.0
+    if spent >= 1000:
+        c.tier = "VIP Gold"
+    elif spent >= 500:
+        c.tier = "Gold"
+    elif spent >= 150:
+        c.tier = "Silver"
+    else:
+        c.tier = "Bronze"
 
 @router.post("/checkout", response_model=POSCheckoutResponse)
 def checkout(
@@ -88,10 +99,53 @@ def checkout(
         )
         items_to_create.append(sale_item)
 
-    discount = round(float(payload.discount or 0.0), 2)
+    # Customer resolution
+    customer = None
+    if payload.customer_id:
+        customer = db.query(Customer).filter(Customer.id == payload.customer_id, Customer.is_active == True).first()
+    elif payload.customer_phone:
+        customer = db.query(Customer).filter(Customer.phone == payload.customer_phone.strip(), Customer.is_active == True).first()
+
+    # Coupon validation
+    coupon_discount = 0.0
+    coupon_code = None
+    if payload.coupon_code:
+        clean_code = payload.coupon_code.strip().upper()
+        coupon = db.query(Coupon).filter(Coupon.code == clean_code, Coupon.is_active == True).first()
+        if coupon and subtotal >= (coupon.min_purchase or 0.0):
+            coupon_code = coupon.code
+            if coupon.discount_type == "percent":
+                coupon_discount = round((subtotal * coupon.discount_value) / 100.0, 2)
+                if coupon.max_discount:
+                    coupon_discount = min(coupon_discount, float(coupon.max_discount))
+            else:
+                coupon_discount = min(subtotal, float(coupon.discount_value))
+            coupon.used_count = (coupon.used_count or 0) + 1
+
+    # Loyalty points redemption: 20 points = $1.00 discount
+    points_redeemed = 0
+    points_discount = 0.0
+    if customer and payload.redeem_points and payload.redeem_points > 0:
+        max_possible_points = min(customer.loyalty_points or 0, payload.redeem_points)
+        points_redeemed = max_possible_points
+        points_discount = round(points_redeemed / 20.0, 2)  # 20 pts = $1
+
+    total_discount = round(float(payload.discount or 0.0) + coupon_discount + points_discount, 2)
     tax = round(float(payload.tax or 0.0), 2)
-    final_amount = max(0.0, round(subtotal - discount + tax, 2))
+    final_amount = max(0.0, round(subtotal - total_discount + tax, 2))
     net_profit = round(final_amount - total_cost, 2)
+
+    # Earn 1 loyalty point per $10 spent
+    points_earned = int(final_amount // 10) if customer else 0
+
+    # Store Tab / Credit Handling
+    if customer:
+        if payload.payment_method == "store_credit":
+            customer.store_credit_balance = round((customer.store_credit_balance or 0.0) + final_amount, 2)
+
+        customer.loyalty_points = max(0, (customer.loyalty_points or 0) - points_redeemed + points_earned)
+        customer.total_spent = round((customer.total_spent or 0.0) + final_amount, 2)
+        update_customer_tier(customer)
 
     change_due = None
     if payload.amount_tendered is not None:
@@ -105,13 +159,17 @@ def checkout(
         amount=final_amount,
         product=summary_product_str,
         invoice_no=invoice_no,
-        customer_name=payload.customer_name or "Walk-in Customer",
-        customer_phone=payload.customer_phone,
+        customer_id=customer.id if customer else None,
+        customer_name=customer.name if customer else (payload.customer_name or "Walk-in Customer"),
+        customer_phone=customer.phone if customer else payload.customer_phone,
         payment_method=payload.payment_method or "cash",
-        discount=discount,
+        discount=total_discount,
         tax=tax,
         total_cost=round(total_cost, 2),
         net_profit=net_profit,
+        coupon_code=coupon_code,
+        points_earned=points_earned,
+        points_redeemed=points_redeemed,
         notes=payload.notes,
         created_at=datetime.utcnow(),
         user_id=user.id,
@@ -126,13 +184,19 @@ def checkout(
         "sale_id": new_sale.id,
         "invoice_no": new_sale.invoice_no,
         "created_at": new_sale.created_at,
+        "customer_id": new_sale.customer_id,
         "customer_name": new_sale.customer_name,
         "customer_phone": new_sale.customer_phone,
         "payment_method": new_sale.payment_method,
         "subtotal": round(subtotal, 2),
-        "discount": discount,
+        "discount": total_discount,
         "tax": tax,
         "amount": final_amount,
+        "coupon_code": new_sale.coupon_code,
+        "points_earned": points_earned,
+        "points_redeemed": points_redeemed,
+        "customer_points_balance": customer.loyalty_points if customer else None,
+        "customer_credit_balance": customer.store_credit_balance if customer else None,
         "amount_tendered": payload.amount_tendered,
         "change_due": change_due,
         "total_cost": round(total_cost, 2),

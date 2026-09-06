@@ -18,6 +18,7 @@ export default function Dashboard() {
   const [showModal, setShowModal] = useState(false);
   const [productName, setProductName] = useState("");
   const [productAmount, setProductAmount] = useState("");
+  const [catalogProducts, setCatalogProducts] = useState([]);
   const [modalLoading, setModalLoading] = useState(false);
   const [modalMsg, setModalMsg] = useState({ error: "", success: "" });
 
@@ -36,16 +37,18 @@ export default function Dashboard() {
     try {
       setLoading(true);
       const daysParam = timeRange ? `?days=${timeRange}` : "";
-      const [sumRes, chartRes, prodRes, recentRes] = await Promise.all([
+      const [sumRes, chartRes, prodRes, recentRes, catProdsRes] = await Promise.all([
         api.get("/dashboard/summary"),
         api.get(`/dashboard/chart-data${daysParam}`),
         api.get("/dashboard/product-breakdown"),
         api.get("/dashboard/recent-activity?limit=6"),
+        api.get("/products?limit=50"),
       ]);
       setSummary(sumRes.data || {});
       setChartData(Array.isArray(chartRes.data) ? chartRes.data : []);
       setProductData(Array.isArray(prodRes.data) ? prodRes.data : []);
       setRecentActivity(Array.isArray(recentRes.data) ? recentRes.data : []);
+      setCatalogProducts(catProdsRes.data?.items || []);
     } catch (err) {
       console.error("Failed to load dashboard data:", err);
     } finally {
@@ -559,11 +562,35 @@ export default function Dashboard() {
             {modalMsg.success && <div className="success-message">{modalMsg.success}</div>}
 
             <form onSubmit={handleQuickSale} className="modal-form">
+              {catalogProducts.length > 0 && (
+                <div className="form-group">
+                  <label>Select From Inventory (Auto-fills price)</label>
+                  <select
+                    className="inv-select"
+                    style={{ width: "100%", marginBottom: "4px" }}
+                    onChange={(e) => {
+                      const prod = catalogProducts.find((p) => p.id === parseInt(e.target.value, 10));
+                      if (prod) {
+                        setProductName(prod.name);
+                        setProductAmount(Number(prod.selling_price).toFixed(2));
+                      }
+                    }}
+                  >
+                    <option value="">-- Choose existing product or type below --</option>
+                    {catalogProducts.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.name} - ${Number(p.selling_price).toFixed(2)} ({p.stock_quantity} in stock)
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
               <div className="form-group">
                 <label>Product Name</label>
                 <input
                   type="text"
-                  placeholder="e.g. Enterprise Cloud Suite"
+                  placeholder="e.g. Arabica Roast Coffee"
                   value={productName}
                   onChange={(e) => setProductName(e.target.value)}
                   autoFocus
@@ -576,7 +603,7 @@ export default function Dashboard() {
                 <input
                   type="number"
                   step="0.01"
-                  placeholder="e.g. 1499.00"
+                  placeholder="e.g. 12.99"
                   value={productAmount}
                   onChange={(e) => setProductAmount(e.target.value)}
                   required

@@ -44,6 +44,9 @@ export default function Navbar() {
             <Link to="/inventory" className="nav-link" title="Product catalog & stock tracking">
               📦 Inventory
             </Link>
+            <Link to="/customers" className="nav-link" title="Customer directory, loyalty points & store tabs">
+              👥 Customers
+            </Link>
             <Link to="/dashboard" className="nav-link" title="Executive metrics and charts">
               📊 Dashboard
             </Link>

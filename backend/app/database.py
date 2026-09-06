@@ -70,6 +70,10 @@ def migrate_schema():
         ("total_cost", "FLOAT DEFAULT 0.0"),
         ("net_profit", "FLOAT DEFAULT 0.0"),
         ("notes", "TEXT"),
+        ("customer_id", "INTEGER"),
+        ("coupon_code", "VARCHAR"),
+        ("points_earned", "INTEGER DEFAULT 0"),
+        ("points_redeemed", "INTEGER DEFAULT 0"),
     ]
     try:
         with engine.begin() as conn:

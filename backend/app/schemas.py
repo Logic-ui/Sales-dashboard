@@ -85,6 +85,90 @@ class InventorySummaryOut(BaseModel):
     total_retail_value: float
     potential_profit: float
 
+# --- CUSTOMER & LOYALTY SCHEMAS ---
+
+class CustomerCreate(BaseModel):
+    name: str = Field(..., min_length=1)
+    phone: Optional[str] = None
+    email: Optional[str] = None
+    address: Optional[str] = None
+    notes: Optional[str] = None
+
+    @validator("name")
+    def strip_name(cls, v):
+        return v.strip()
+
+class CustomerUpdate(BaseModel):
+    name: Optional[str] = None
+    phone: Optional[str] = None
+    email: Optional[str] = None
+    address: Optional[str] = None
+    notes: Optional[str] = None
+    is_active: Optional[bool] = None
+
+class CustomerOut(BaseModel):
+    id: int
+    name: str
+    phone: Optional[str] = None
+    email: Optional[str] = None
+    address: Optional[str] = None
+    loyalty_points: int
+    store_credit_balance: float
+    total_spent: float
+    tier: str
+    notes: Optional[str] = None
+    is_active: bool
+    created_at: datetime
+    user_id: Optional[int] = None
+
+    model_config = {"from_attributes": True}
+
+class CustomerPage(BaseModel):
+    items: List[CustomerOut]
+    total: int
+
+class StoreCreditPaymentRequest(BaseModel):
+    amount: float = Field(..., gt=0)
+    notes: Optional[str] = "Customer paid store tab"
+
+# --- COUPON SCHEMAS ---
+
+class CouponCreate(BaseModel):
+    code: str = Field(..., min_length=2)
+    discount_type: str = "percent"  # "percent" or "fixed"
+    discount_value: float = Field(..., gt=0)
+    min_purchase: float = Field(0.0, ge=0)
+    max_discount: Optional[float] = None
+
+    @validator("code")
+    def clean_code(cls, v):
+        return v.strip().upper()
+
+class CouponOut(BaseModel):
+    id: int
+    code: str
+    discount_type: str
+    discount_value: float
+    min_purchase: float
+    max_discount: Optional[float] = None
+    is_active: bool
+    used_count: int
+    created_at: datetime
+
+    model_config = {"from_attributes": True}
+
+class CouponValidateRequest(BaseModel):
+    code: str
+    subtotal: float
+
+class CouponValidateResponse(BaseModel):
+    valid: bool
+    code: str
+    discount_type: str
+    discount_value: float
+    calculated_discount: float
+    message: str
+
 # --- POS & SALE ITEM SCHEMAS ---
 
 class SaleItemOut(BaseModel):
@@ -107,11 +191,14 @@ class POSCartItem(BaseModel):
 
 class POSCheckoutRequest(BaseModel):
     items: List[POSCartItem]
+    customer_id: Optional[int] = None
     customer_name: Optional[str] = "Walk-in Customer"
     customer_phone: Optional[str] = None
     payment_method: str = "cash"  # cash, card, mobile_pay, store_credit
     discount: float = Field(0.0, ge=0)
     tax: float = Field(0.0, ge=0)
+    coupon_code: Optional[str] = None
+    redeem_points: Optional[int] = 0
     amount_tendered: Optional[float] = None
     notes: Optional[str] = None
 
@@ -119,6 +206,7 @@ class POSCheckoutResponse(BaseModel):
     sale_id: int
     invoice_no: str
     created_at: datetime
+    customer_id: Optional[int] = None
     customer_name: str
     customer_phone: Optional[str] = None
     payment_method: str
@@ -126,6 +214,11 @@ class POSCheckoutResponse(BaseModel):
     discount: float
     tax: float
     amount: float
+    coupon_code: Optional[str] = None
+    points_earned: int = 0
+    points_redeemed: int = 0
+    customer_points_balance: Optional[int] = None
+    customer_credit_balance: Optional[float] = None
     amount_tendered: Optional[float] = None
     change_due: Optional[float] = None
     total_cost: float

@@ -16,12 +16,20 @@ export default function POS() {
 
   // Cart State: array of { product, quantity, unit_price }
   const [cart, setCart] = useState([]);
+  const [customers, setCustomers] = useState([]);
+  const [selectedCustomerId, setSelectedCustomerId] = useState("");
   const [customerName, setCustomerName] = useState("Walk-in Customer");
   const [customerPhone, setCustomerPhone] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("cash"); // 'cash', 'card', 'mobile_pay', 'store_credit'
   const [discount, setDiscount] = useState(0);
   const [tax, setTax] = useState(0);
   const [amountTendered, setAmountTendered] = useState("");
+
+  // Coupon & Loyalty points
+  const [couponCode, setCouponCode] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState(null);
+  const [couponError, setCouponError] = useState("");
+  const [redeemPoints, setRedeemPoints] = useState(0);
 
   // Completed Receipt Modal State
   const [activeReceipt, setActiveReceipt] = useState(null);
@@ -34,16 +42,18 @@ export default function POS() {
     sound.muted = !soundEnabled;
   }, [soundEnabled]);
 
-  // Fetch product catalog
+  // Fetch product catalog & customers
   const fetchProducts = useCallback(async () => {
     try {
       setLoading(true);
-      const [prodRes, catRes] = await Promise.all([
+      const [prodRes, catRes, custRes] = await Promise.all([
         api.get("/products", { params: { limit: 150, sort: "name", order: "asc" } }),
         api.get("/products/categories"),
+        api.get("/customers", { params: { limit: 100 } }),
       ]);
       setProducts(prodRes.data.items || []);
       setCategories(["All", ...(catRes.data || [])]);
+      setCustomers(custRes.data.items || []);
     } catch (err) {
       console.error("Failed to load catalog:", err);
       setError("Unable to connect to inventory server.");
@@ -154,11 +164,62 @@ export default function POS() {
     }
   };
 
+  // Active selected customer object
+  const activeCustomer = customers.find((c) => c.id === parseInt(selectedCustomerId, 10)) || null;
+
+  // Handle Customer Selection
+  const handleCustomerChange = (e) => {
+    const val = e.target.value;
+    setSelectedCustomerId(val);
+    setRedeemPoints(0);
+    if (!val) {
+      setCustomerName("Walk-in Customer");
+      setCustomerPhone("");
+    } else {
+      const cust = customers.find((c) => c.id === parseInt(val, 10));
+      if (cust) {
+        setCustomerName(cust.name);
+        setCustomerPhone(cust.phone || "");
+      }
+    }
+  };
+
+  // Coupon validation
+  const handleApplyCoupon = async () => {
+    if (!couponCode.trim()) return;
+    try {
+      setCouponError("");
+      const res = await api.post("/coupons/validate", {
+        code: couponCode.trim(),
+        subtotal,
+      });
+      if (res.data.valid) {
+        sound.playBeep();
+        setAppliedCoupon(res.data);
+        setCouponError("");
+      } else {
+        sound.playError();
+        setCouponError(res.data.message);
+      }
+    } catch {
+      setCouponError("Failed to validate coupon");
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponCode("");
+    setCouponError("");
+  };
+
   // Cart calculations
   const subtotal = cart.reduce((sum, item) => sum + item.unit_price * item.quantity, 0);
-  const discountNum = Math.min(subtotal, Math.max(0, parseFloat(discount) || 0));
+  const couponDiscount = appliedCoupon ? appliedCoupon.calculated_discount : 0;
+  const pointsDiscount = Math.round((redeemPoints / 20.0) * 100) / 100;
+  const manualDiscount = Math.max(0, parseFloat(discount) || 0);
+  const totalDiscount = Math.min(subtotal, manualDiscount + couponDiscount + pointsDiscount);
   const taxNum = Math.max(0, parseFloat(tax) || 0);
-  const grandTotal = Math.max(0, subtotal - discountNum + taxNum);
+  const grandTotal = Math.max(0, subtotal - totalDiscount + taxNum);
 
   const tenderedNum = parseFloat(amountTendered) || 0;
   const changeDue = Math.max(0, tenderedNum - grandTotal);
@@ -188,10 +249,13 @@ export default function POS() {
           quantity: item.quantity,
           unit_price: item.unit_price,
         })),
-        customer_name: customerName.trim() || "Walk-in Customer",
-        customer_phone: customerPhone.trim() || undefined,
+        customer_id: activeCustomer ? activeCustomer.id : undefined,
+        customer_name: activeCustomer ? activeCustomer.name : (customerName.trim() || "Walk-in Customer"),
+        customer_phone: activeCustomer ? activeCustomer.phone : (customerPhone.trim() || undefined),
         payment_method: paymentMethod,
-        discount: discountNum,
+        discount: manualDiscount,
+        coupon_code: appliedCoupon ? appliedCoupon.code : undefined,
+        redeem_points: redeemPoints,
         tax: taxNum,
         amount_tendered: amountTendered !== "" ? tenderedNum : undefined,
         notes: `POS Terminal Sale`,
@@ -206,8 +270,11 @@ export default function POS() {
       setCart([]);
       setAmountTendered("");
       setDiscount(0);
+      setAppliedCoupon(null);
+      setCouponCode("");
+      setRedeemPoints(0);
 
-      // Refresh inventory in background so stock badges update
+      // Refresh inventory and customers in background
       fetchProducts();
     } catch (err) {
       sound.playError();
@@ -416,28 +483,121 @@ export default function POS() {
 
           {/* Cart Footer & Checkout Controls */}
           <div className="pos-cart-footer">
-            {/* Customer Details Accordion */}
-            <div className="pos-customer-row">
-              <input
-                type="text"
-                className="pos-cust-input"
-                placeholder="Customer Name (e.g. Sarah)"
-                value={customerName}
-                onChange={(e) => setCustomerName(e.target.value)}
-              />
-              <input
-                type="text"
-                className="pos-cust-input"
-                placeholder="Phone (optional for receipt)"
-                value={customerPhone}
-                onChange={(e) => setCustomerPhone(e.target.value)}
-              />
+            {/* Customer Selector & Loyalty Card */}
+            <div className="pos-customer-section">
+              <div className="pos-customer-select-row">
+                <select
+                  className="pos-cust-select"
+                  value={selectedCustomerId}
+                  onChange={handleCustomerChange}
+                >
+                  <option value="">👤 Walk-in Customer (Guest)</option>
+                  {customers.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name} ({c.tier || "Bronze"} &bull; {c.loyalty_points || 0} pts)
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {activeCustomer ? (
+                <div className="active-cust-card">
+                  <div className="cust-card-top">
+                    <span className={`tier-badge ${activeCustomer.tier?.includes("VIP") ? "tier-vip" : activeCustomer.tier === "Gold" ? "tier-gold" : "tier-silver"}`}>
+                      ⭐ {activeCustomer.tier || "Bronze"}
+                    </span>
+                    <span className="cust-pts">🪙 {activeCustomer.loyalty_points || 0} pts</span>
+                  </div>
+
+                  {activeCustomer.store_credit_balance > 0 && (
+                    <div className="cust-tab-warning">
+                      ⚠️ Pending Tab Balance: <b>${Number(activeCustomer.store_credit_balance).toFixed(2)}</b>
+                    </div>
+                  )}
+
+                  {/* Loyalty Points Redemption Button */}
+                  {activeCustomer.loyalty_points >= 20 && (
+                    <div className="cust-points-redeem-row">
+                      {redeemPoints === 0 ? (
+                        <button
+                          type="button"
+                          className="redeem-btn"
+                          onClick={() => {
+                            const maxPts = Math.min(activeCustomer.loyalty_points, Math.floor(subtotal * 20));
+                            setRedeemPoints(maxPts >= 20 ? maxPts : 20);
+                            sound.playBeep();
+                          }}
+                        >
+                          🎁 Redeem Points for Discount
+                        </button>
+                      ) : (
+                        <div className="redeem-active-box">
+                          <span>🎁 Using {redeemPoints} pts (-${pointsDiscount.toFixed(2)})</span>
+                          <button
+                            type="button"
+                            className="cancel-redeem-btn"
+                            onClick={() => setRedeemPoints(0)}
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="pos-customer-row">
+                  <input
+                    type="text"
+                    className="pos-cust-input"
+                    placeholder="Guest Name (e.g. Sarah)"
+                    value={customerName}
+                    onChange={(e) => setCustomerName(e.target.value)}
+                  />
+                  <input
+                    type="text"
+                    className="pos-cust-input"
+                    placeholder="Phone (for WhatsApp receipt)"
+                    value={customerPhone}
+                    onChange={(e) => setCustomerPhone(e.target.value)}
+                  />
+                </div>
+              )}
             </div>
 
-            {/* Discount & Tax Row */}
+            {/* Coupon Code Row */}
+            <div className="pos-coupon-row">
+              {appliedCoupon ? (
+                <div className="applied-coupon-tag">
+                  <span>🏷️ Coupon <b>{appliedCoupon.code}</b> (-${appliedCoupon.calculated_discount.toFixed(2)})</span>
+                  <button type="button" className="remove-coupon-btn" onClick={handleRemoveCoupon}>✕</button>
+                </div>
+              ) : (
+                <div className="coupon-input-group">
+                  <input
+                    type="text"
+                    className="pos-coupon-input"
+                    placeholder="Promo Code (e.g. WELCOME10)"
+                    value={couponCode}
+                    onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                  />
+                  <button
+                    type="button"
+                    className="apply-coupon-btn"
+                    onClick={handleApplyCoupon}
+                    disabled={!couponCode.trim()}
+                  >
+                    Apply
+                  </button>
+                </div>
+              )}
+              {couponError && <div className="coupon-error-hint">{couponError}</div>}
+            </div>
+
+            {/* Manual Discount & Tax Row */}
             <div className="pos-adjustment-row">
               <div className="adjust-control">
-                <label>Discount ($)</label>
+                <label>Manual Discount ($)</label>
                 <input
                   type="number"
                   min="0"
@@ -539,10 +699,22 @@ export default function POS() {
                 <span>Subtotal:</span>
                 <span>${subtotal.toFixed(2)}</span>
               </div>
-              {discountNum > 0 && (
+              {couponDiscount > 0 && (
                 <div className="tot-row discount">
-                  <span>Discount:</span>
-                  <span>-${discountNum.toFixed(2)}</span>
+                  <span>Coupon ({appliedCoupon?.code}):</span>
+                  <span>-${couponDiscount.toFixed(2)}</span>
+                </div>
+              )}
+              {pointsDiscount > 0 && (
+                <div className="tot-row discount">
+                  <span>Loyalty Points ({redeemPoints} pts):</span>
+                  <span>-${pointsDiscount.toFixed(2)}</span>
+                </div>
+              )}
+              {manualDiscount > 0 && (
+                <div className="tot-row discount">
+                  <span>Manual Discount:</span>
+                  <span>-${manualDiscount.toFixed(2)}</span>
                 </div>
               )}
               {taxNum > 0 && (

@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from .database import Base, engine, repair_legacy_sale_owners, migrate_schema
-from .routes import auth, sales, dashboard, users, products, pos
+from .routes import auth, sales, dashboard, users, products, pos, customers, coupons
 
 Base.metadata.create_all(bind=engine)
 migrate_schema()
@@ -41,6 +41,8 @@ app.include_router(auth.router)
 app.include_router(sales.router)
 app.include_router(products.router)
 app.include_router(pos.router)
+app.include_router(customers.router)
+app.include_router(coupons.router)
 app.include_router(dashboard.router)
 app.include_router(users.router)
 
