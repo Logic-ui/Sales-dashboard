@@ -24,39 +24,27 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "/api/index.py"
+      "destination": "/api/index.py?__path__=/api/$1"
+    },
+    {
+      "source": "/api",
+      "destination": "/api/index.py?__path__=/api"
     },
     {
       "source": "/auth/(.*)",
-      "destination": "/api/index.py"
-    },
-    {
-      "source": "/dashboard/(.*)",
-      "destination": "/api/index.py"
-    },
-    {
-      "source": "/pos/(.*)",
-      "destination": "/api/index.py"
-    },
-    {
-      "source": "/coupons/(.*)",
-      "destination": "/api/index.py"
-    },
-    {
-      "source": "/users/(.*)",
-      "destination": "/api/index.py"
+      "destination": "/api/index.py?__path__=/api/auth/$1"
     },
     {
       "source": "/ping",
-      "destination": "/api/index.py"
+      "destination": "/api/index.py?__path__=/api/ping"
     },
     {
       "source": "/docs",
-      "destination": "/api/index.py"
+      "destination": "/api/index.py?__path__=/docs"
     },
     {
       "source": "/openapi.json",
-      "destination": "/api/index.py"
+      "destination": "/api/index.py?__path__=/openapi.json"
     },
     {
       "source": "/((?!api/|static/|favicon.ico|manifest.json|images/).*)",
